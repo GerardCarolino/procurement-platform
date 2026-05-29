@@ -1,0 +1,76 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg pg-navbar">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'procurements:list' %}">
+      <div
+        style="width:32px;height:32px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-hexagon-fill" style="color:var(--navy);font-size:16px;"></i>
+      </div>
+      <div>
+        <span style="color:#fff;font-weight:700;font-size:14px;letter-spacing:.3px;">ProcureGov</span>
+        <span class="sub">Public Procurement Portal</span>
+      </div>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto ms-4 gap-1">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.app_name == 'procurements' %}active{% endif %}"
+            href="{% url 'procurements:list' %}">Procurements</a>
+        </li>
+        {% if user.is_authenticated and user.is_vendor %}
+
+        <li class="nav-item">
+          <a class="nav-link {% if 'my-bids' in request.path %}active{% endif %}" href="{% url 'bids:my_bids' %}">My
+            Bids</a>
+        </li>
+
+        {% endif %}
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'bids:awarded' %}">Awarded Contracts</a>
+        </li>
+        {% if user.is_authenticated and user.is_agency_admin %}
+        <li class="nav-item">
+          <a class="nav-link {% if 'dashboard' in request.path %}active{% endif %}"
+            href="{% url 'procurements:admin_dashboard' %}">Dashboard</a>
+        </li>
+        {% endif %}
+        {% if user.is_authenticated and user.is_staff %}
+        <li class="nav-item">
+          <a class="nav-link {% if 'admin-panel' in request.path %}active{% endif %}" href="/admin-panel/">Admin
+            Panel</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'agencies' in request.path %}active{% endif %}"
+            href="/admin-panel/agencies/">Agencies</a>
+        </li>
+        {% endif %}
+
+      </ul>
+
+      <div class="d-flex align-items-center gap-2">
+        {% if user.is_authenticated %}
+        <span style="color:rgba(255,255,255,.5);font-size:12px;">{{ user.organization|default:user.username }}</span>
+
+        {% if user.is_authenticated and user.is_verified_vendor %}
+        <a href="{% url 'procurements:list' %}" class="btn btn-gold btn-sm">+ Submit Bid</a>
+        {% endif %}
+
+        <a href="{% url 'users:logout' %}" class="btn btn-sm"
+          style="color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.2);font-size:12px;">
+          Logout
+        </a>
+        {% else %}
+        <a href="{% url 'users:login' %}" class="btn btn-sm"
+          style="color:rgba(255,255,255,.7);font-size:12px;">Login</a>
+        <a href="{% url 'users:register' %}" class="btn btn-gold btn-sm">Register as Vendor</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Vendor Admin Panel — ProcureGov{% endblock %}
+
+{% block content %}
+<div class="pg-hero" style="padding:2rem 0 1.5rem;">
+  <div class="container">
+    <h1 style="color:#fff;font-size:1.6rem;font-weight:700;margin:0;">
+      <i class="bi bi-shield-check me-2" style="color:var(--gold);"></i>Vendor Admin Panel
+    </h1>
+    <p style="color:rgba(255,255,255,.55);font-size:.85rem;margin:.25rem 0 0;">
+      Manage vendor verification and account status
+    </p>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- Summary widgets -->
+  <div class="row g-3 mb-4">
+    <div class="col-4">
+      <div class="widget-card text-center">
+        <i class="bi bi-hourglass-split" style="font-size:1.4rem;color:var(--amber);"></i>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.pending }}</div>
+        <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Pending</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="widget-card text-center">
+        <i class="bi bi-patch-check-fill" style="font-size:1.4rem;color:var(--green);"></i>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.verified }}</div>
+        <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Verified</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="widget-card text-center">
+        <i class="bi bi-x-circle-fill" style="font-size:1.4rem;color:var(--red);"></i>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.rejected }}</div>
+        <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Rejected</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="widget-card p-0 overflow-visible">
+    <div style="border-bottom:1px solid var(--gray-100);padding:0 1.5rem;">
+      <ul class="nav" style="gap:.25rem;">
+        <li class="nav-item">
+          <a href="?tab=pending"
+             style="display:block;padding:.75rem 1rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid {% if tab == 'pending' %}var(--gold){% else %}transparent{% endif %};color:{% if tab == 'pending' %}var(--navy){% else %}var(--gray-400){% endif %};">
+            Pending
+            {% if counts.pending %}
+              <span style="background:var(--amber-bg);color:var(--amber);font-size:.7rem;padding:1px 7px;border-radius:99px;margin-left:4px;">{{ counts.pending }}</span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="?tab=verified"
+             style="display:block;padding:.75rem 1rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid {% if tab == 'verified' %}var(--gold){% else %}transparent{% endif %};color:{% if tab == 'verified' %}var(--navy){% else %}var(--gray-400){% endif %};">
+            Verified
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="?tab=rejected"
+             style="display:block;padding:.75rem 1rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid {% if tab == 'rejected' %}var(--gold){% else %}transparent{% endif %};color:{% if tab == 'rejected' %}var(--navy){% else %}var(--gray-400){% endif %};">
+            Rejected
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Pending tab -->
+    {% if tab == 'pending' %}
+      {% if pending %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.875rem;">
+          <thead style="background:var(--gray-50);">
+            <tr>
+              <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Vendor</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Organization</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Email</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Phone</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Registered</th>
+              <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vendor in pending %}
+            <tr id="vendor-{{ vendor.pk }}">
+              <td class="px-4 py-3" style="font-weight:600;color:var(--navy);">{{ vendor.username }}</td>
+              <td class="py-3">{{ vendor.organization|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);">{{ vendor.email|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);">{{ vendor.phone|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">{{ vendor.date_joined|date:"M d, Y" }}</td>
+              <td class="py-3 pe-4 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                  <form method="post" action="/admin-panel/{{ vendor.pk }}/verify/">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm"
+                            style="background:var(--green);color:#fff;border:none;font-size:.75rem;padding:3px 10px;">
+                      <i class="bi bi-check-lg me-1"></i>Verify
+                    </button>
+                  </form>
+                  <form method="post" action="/admin-panel/{{ vendor.pk }}/reject/">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm"
+                            style="border:1px solid var(--red);color:var(--red);font-size:.75rem;padding:3px 10px;">
+                      <i class="bi bi-x-lg me-1"></i>Reject
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5" style="color:var(--gray-400);">
+        <i class="bi bi-hourglass" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+        No pending vendors.
+      </div>
+      {% endif %}
+
+    <!-- Verified tab -->
+    {% elif tab == 'verified' %}
+      {% if verified %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.875rem;">
+          <thead style="background:var(--gray-50);">
+            <tr>
+              <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Vendor</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Organization</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Email</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Phone</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Verified</th>
+              <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vendor in verified %}
+            <tr id="vendor-{{ vendor.pk }}">
+              <td class="px-4 py-3" style="font-weight:600;color:var(--navy);">{{ vendor.username }}</td>
+              <td class="py-3">{{ vendor.organization|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);">{{ vendor.email|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);">{{ vendor.phone|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">{{ vendor.date_joined|date:"M d, Y" }}</td>
+              <td class="py-3 pe-4 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                  <form method="post" action="/admin-panel/{{ vendor.pk }}/revoke/">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm"
+                            style="border:1px solid var(--amber);color:var(--amber);font-size:.75rem;padding:3px 10px;">
+                      <i class="bi bi-slash-circle me-1"></i>Revoke
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-sm"
+                          style="border:1px solid var(--red);color:var(--red);font-size:.75rem;padding:3px 10px;"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteModal{{ vendor.pk }}">
+                    <i class="bi bi-trash me-1"></i>Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5" style="color:var(--gray-400);">
+        <i class="bi bi-patch-check" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+        No verified vendors yet.
+      </div>
+      {% endif %}
+
+    <!-- Rejected tab -->
+    {% elif tab == 'rejected' %}
+      {% if rejected %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.875rem;">
+          <thead style="background:var(--gray-50);">
+            <tr>
+              <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Vendor</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Organization</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Email</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Phone</th>
+              <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vendor in rejected %}
+            <tr id="vendor-{{ vendor.pk }}">
+              <td class="px-4 py-3" style="font-weight:600;color:var(--navy);">{{ vendor.username }}</td>
+              <td class="py-3">{{ vendor.organization|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);">{{ vendor.email|default:"—" }}</td>
+              <td class="py-3" style="color:var(--gray-500);">{{ vendor.phone|default:"—" }}</td>
+              <td class="py-3 pe-4 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                  <form method="post" action="/admin-panel/{{ vendor.pk }}/verify/">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm"
+                            style="background:var(--green);color:#fff;border:none;font-size:.75rem;padding:3px 10px;">
+                      <i class="bi bi-check-lg me-1"></i>Re-verify
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-sm"
+                          style="border:1px solid var(--red);color:var(--red);font-size:.75rem;padding:3px 10px;"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteModal{{ vendor.pk }}">
+                    <i class="bi bi-trash me-1"></i>Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5" style="color:var(--gray-400);">
+        <i class="bi bi-x-circle" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+        No rejected vendors.
+      </div>
+      {% endif %}
+    {% endif %}
+
+  </div><!-- /widget-card -->
+
+  <!-- Delete modals — outside table -->
+  {% for vendor in verified %}
+  <div class="modal fade" id="deleteModal{{ vendor.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:none;border-radius:12px;">
+        <form method="post" action="/admin-panel/{{ vendor.pk }}/delete/">
+          {% csrf_token %}
+          <div class="modal-body p-4 text-center">
+            <div style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+              <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);font-size:1.4rem;"></i>
+            </div>
+            <h5 style="color:var(--navy);font-weight:700;">Delete Vendor Account?</h5>
+            <p style="color:var(--gray-500);font-size:.875rem;">
+              <strong>{{ vendor.organization|default:vendor.username }}</strong><br>
+              <span style="color:var(--red);font-size:.8rem;">This will permanently delete their account and all their bids.</span>
+            </p>
+            <div class="d-flex gap-2 justify-content-center mt-3">
+              <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                      style="border:1px solid var(--gray-200);color:var(--gray-600);">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-sm"
+                      style="background:var(--red);color:#fff;border:none;">
+                <i class="bi bi-trash me-1"></i>Yes, delete
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% for vendor in rejected %}
+  <div class="modal fade" id="deleteModal{{ vendor.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:none;border-radius:12px;">
+        <form method="post" action="/admin-panel/{{ vendor.pk }}/delete/">
+          {% csrf_token %}
+          <div class="modal-body p-4 text-center">
+            <div style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+              <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);font-size:1.4rem;"></i>
+            </div>
+            <h5 style="color:var(--navy);font-weight:700;">Delete Vendor Account?</h5>
+            <p style="color:var(--gray-500);font-size:.875rem;">
+              <strong>{{ vendor.organization|default:vendor.username }}</strong><br>
+              <span style="color:var(--red);font-size:.8rem;">This will permanently delete their account and all their bids.</span>
+            </p>
+            <div class="d-flex gap-2 justify-content-center mt-3">
+              <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                      style="border:1px solid var(--gray-200);color:var(--gray-600);">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-sm"
+                      style="background:var(--red);color:#fff;border:none;">
+                <i class="bi bi-trash me-1"></i>Yes, delete
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

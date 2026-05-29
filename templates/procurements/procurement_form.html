@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} — ProcureGov{% endblock %}
+
+{% block content %}
+<div class="pg-hero" style="padding:2rem 0 1.5rem;">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'procurements:admin_dashboard' %}"
+         style="color:rgba(255,255,255,.5);font-size:.875rem;text-decoration:none;">
+        <i class="bi bi-arrow-left me-1"></i>Dashboard
+      </a>
+      <span style="color:rgba(255,255,255,.25);">/</span>
+      <h1 style="color:#fff;font-size:1.4rem;font-weight:700;margin:0;">{{ page_title }}</h1>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4" style="max-width:760px;">
+  <div class="widget-card p-4">
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="row g-3">
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Reference Number <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.reference_number }}
+          {% if form.reference_number.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.reference_number.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Category <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.category }}
+          {% if form.category.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.category.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Status <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.status }}
+          {% if form.status.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.status.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Title <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.title.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Description <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.description }}
+          {% if form.description.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.description.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Agency <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.agency }}
+          {% if form.agency.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.agency.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Approved Budget (₱) <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.approved_budget }}
+          {% if form.approved_budget.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.approved_budget.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold" style="font-size:.8rem;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Bid Opening Date & Time <span style="color:var(--red);">*</span>
+          </label>
+          {{ form.bid_open_date }}
+          <div style="font-size:.75rem;color:var(--gray-400);margin-top:4px;">
+            Bids become visible to all parties after this date.
+          </div>
+          {% if form.bid_open_date.errors %}
+            <div class="text-danger" style="font-size:.8rem;margin-top:4px;">{{ form.bid_open_date.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <hr style="border-color:var(--gray-100);margin:1.5rem 0;">
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'procurements:admin_dashboard' %}"
+           class="btn btn-sm"
+           style="border:1px solid var(--gray-200);color:var(--gray-600);">
+          Cancel
+        </a>
+        <button type="submit" class="btn btn-gold">
+          <i class="bi bi-check-lg me-1"></i>{{ action }} Procurement
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

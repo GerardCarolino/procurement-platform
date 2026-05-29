@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Login — ProcureGov{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;background:var(--navy);display:flex;align-items:center;justify-content:center;padding:2rem 1rem;">
+  <div style="width:100%;max-width:420px;">
+
+    <!-- Logo -->
+    <div class="text-center mb-4">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+        <i class="bi bi-hexagon-fill" style="color:var(--navy);font-size:22px;"></i>
+      </div>
+      <h1 style="color:#fff;font-size:1.4rem;font-weight:700;margin:0;">Welcome back</h1>
+      <p style="color:rgba(255,255,255,.45);font-size:.85rem;margin:.4rem 0 0;">
+        Sign in to access your procurement dashboard
+      </p>
+    </div>
+
+    <!-- Card -->
+    <div style="background:#fff;border-radius:16px;padding:2rem;box-shadow:0 24px 48px rgba(0,0,0,.3);">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} mb-3" style="font-size:.8rem;border-radius:8px;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Username
+          </label>
+          <input type="text" name="username"
+                 class="form-control"
+                 placeholder="Enter your username"
+                 style="border-color:var(--gray-200);font-size:.875rem;border-radius:8px;padding:.6rem .9rem;"
+                 value="{{ form.username.value|default:'' }}" required>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+            Password
+          </label>
+          <input type="password" name="password"
+                 class="form-control"
+                 placeholder="Enter your password"
+                 style="border-color:var(--gray-200);font-size:.875rem;border-radius:8px;padding:.6rem .9rem;"
+                 required>
+        </div>
+
+        <button type="submit" class="btn btn-gold w-100"
+                style="padding:.7rem;font-size:.875rem;font-weight:600;border-radius:8px;">
+          Sign In
+        </button>
+      </form>
+
+      <p style="text-align:center;margin-top:1.25rem;font-size:.8rem;color:var(--gray-400);">
+        No account?
+        <a href="{% url 'users:register' %}" style="color:var(--navy);font-weight:600;">Register as a vendor</a>
+      </p>
+    </div>
+
+    <!-- Footer note -->
+    <p class="text-center mt-3" style="color:rgba(255,255,255,.25);font-size:.75rem;">
+      ProcureGov · Public Procurement Portal
+    </p>
+
+  </div>
+</div>
+{% endblock %}

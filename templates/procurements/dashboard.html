@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load procurement_tags %}
+
+{% block title %}Agency Dashboard — ProcureGov{% endblock %}
+
+{% block content %}
+<div class="pg-hero" style="padding:2rem 0 1.5rem;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 style="color:#fff;font-size:1.6rem;font-weight:700;margin:0;">
+          <i class="bi bi-speedometer2 me-2" style="color:var(--gold);"></i>Agency Dashboard
+        </h1>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;margin:.25rem 0 0;">
+          Manage your procurement listings
+        </p>
+      </div>
+      <a href="{% url 'procurements:create' %}" class="btn btn-gold">
+        <i class="bi bi-plus-lg me-1"></i> New Procurement
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- Summary widgets -->
+  <div class="row g-3 mb-4">
+    {% for label, value, icon, color in counts_display %}
+    <div class="col-6 col-md-auto flex-md-fill">
+      <div class="widget-card text-center">
+        <i class="bi {{ icon }} count-icon" style="font-size:1.4rem;" data-icon-color="{{ color }}"></i>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ value }}</div>
+        <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Procurements table -->
+  <div class="widget-card p-0 overflow-hidden">
+    <div class="d-flex align-items-center justify-content-between px-4 py-3"
+         style="border-bottom:1px solid var(--gray-100);">
+      <h2 class="section-title mb-0">Your Procurements</h2>
+      <span style="font-size:.8rem;color:var(--gray-400);">{{ counts.total }} total</span>
+    </div>
+
+    {% if procurements %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:.875rem;">
+        <thead style="background:var(--gray-50);">
+          <tr>
+            <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Ref #</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Title</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Category</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Budget</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Status</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Bid Opens</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Bids</th>
+            <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in procurements %}
+          <tr>
+            <td class="px-4 py-3">
+              <code style="font-size:.8rem;color:var(--navy-muted);">{{ p.reference_number }}</code>
+            </td>
+            <td class="py-3" style="max-width:240px;">
+              <a href="{% url 'procurements:detail' p.pk %}"
+                 style="color:var(--navy);font-weight:600;text-decoration:none;">
+                {{ p.title|truncatechars:50 }}
+              </a>
+            </td>
+            <td class="py-3">
+              <span style="font-size:.75rem;background:var(--gold-pale);color:var(--navy-muted);padding:2px 8px;border-radius:4px;font-weight:500;">
+                {{ p.get_category_display }}
+              </span>
+            </td>
+            <td class="py-3" style="font-variant-numeric:tabular-nums;font-weight:500;">
+              {{ p.approved_budget|format_currency }}
+            </td>
+            <td class="py-3">
+              <span class="badge-{{ p.status|lower }}">{{ p.get_status_display }}</span>
+            </td>
+            <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">
+              {{ p.bid_open_date|date:"M d, Y H:i" }}
+            </td>
+            <td class="py-3">
+              <a href="{% url 'bids:all_bids' %}?procurement={{ p.pk }}"
+                 style="font-size:.8rem;color:var(--navy);font-weight:600;text-decoration:none;">
+                {{ p.bids.count }} bid{{ p.bids.count|pluralize }}
+              </a>
+            </td>
+            <td class="py-3 pe-4 text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                <a href="{% url 'procurements:edit' p.pk %}"
+                   class="btn btn-sm"
+                   style="border:1px solid var(--navy-muted);color:var(--navy);font-size:.75rem;padding:3px 10px;">
+                  <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+                <button type="button"
+                        class="btn btn-sm"
+                        style="border:1px solid var(--red);color:var(--red);font-size:.75rem;padding:3px 10px;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal{{ p.pk }}">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5" style="color:var(--gray-400);">
+      <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+      No procurements yet.
+      <a href="{% url 'procurements:create' %}" style="color:var(--gold);">Create your first one →</a>
+    </div>
+    {% endif %}
+
+  </div><!-- /widget-card -->
+
+  <!-- ── Delete modals — outside the table so overflow-hidden doesn't clip them -->
+  {% for p in procurements %}
+  <div class="modal fade" id="deleteModal{{ p.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:none;border-radius:12px;">
+        <form method="post" action="{% url 'procurements:delete' p.pk %}">
+          {% csrf_token %}
+          <div class="modal-body p-4 text-center">
+            <div style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+              <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);font-size:1.4rem;"></i>
+            </div>
+            <h5 style="color:var(--navy);font-weight:700;">Delete Procurement?</h5>
+            <p style="color:var(--gray-500);font-size:.875rem;">
+              <strong>{{ p.reference_number }}</strong> — {{ p.title|truncatechars:60 }}<br>
+              {% if p.bids.count > 0 %}
+                <span style="color:var(--red);font-size:.8rem;">
+                  This procurement has {{ p.bids.count }} bid(s) and cannot be deleted.<br>
+                  Cancel the procurement instead.
+                </span>
+              {% else %}
+                <span style="color:var(--red);font-size:.8rem;">This action cannot be undone.</span>
+              {% endif %}
+            </p>
+            <div class="d-flex gap-2 justify-content-center mt-3">
+              <button type="button"
+                      class="btn btn-sm"
+                      data-bs-dismiss="modal"
+                      style="border:1px solid var(--gray-200);color:var(--gray-600);">
+                Cancel
+              </button>
+              {% if p.bids.count == 0 %}
+              <button type="submit"
+                      class="btn btn-sm"
+                      style="background:var(--red);color:#fff;border:none;">
+                <i class="bi bi-trash me-1"></i>Yes, delete
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  <!-- /modals -->
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.count-icon[data-icon-color]').forEach(function(el) {
+      el.style.color = el.dataset.iconColor;
+    });
+  });
+</script>
+{% endblock %}

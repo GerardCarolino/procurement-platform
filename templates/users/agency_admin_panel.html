@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Agency Management — ProcureGov{% endblock %}
+
+{% block content %}
+<div class="pg-hero" style="padding:2rem 0 1.5rem;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <a href="/admin-panel/"
+             style="color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none;">
+            <i class="bi bi-arrow-left me-1"></i>Admin Panel
+          </a>
+        </div>
+        <h1 style="color:#fff;font-size:1.6rem;font-weight:700;margin:0;">
+          <i class="bi bi-building me-2" style="color:var(--gold);"></i>Agency Management
+        </h1>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;margin:.25rem 0 0;">
+          {{ count }} agenc{{ count|pluralize:"y,ies" }} registered
+        </p>
+      </div>
+      <button type="button"
+              class="btn btn-gold"
+              data-bs-toggle="modal"
+              data-bs-target="#createAgencyModal">
+        <i class="bi bi-plus-lg me-1"></i> New Agency
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- Agencies table -->
+  <div class="widget-card p-0 overflow-visible">
+    <div class="d-flex align-items-center justify-content-between px-4 py-3"
+         style="border-bottom:1px solid var(--gray-100);">
+      <h2 class="section-title mb-0">All Agencies</h2>
+      <span style="font-size:.8rem;color:var(--gray-400);">{{ count }} total</span>
+    </div>
+
+    {% if agencies %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:.875rem;">
+        <thead style="background:var(--gray-50);">
+          <tr>
+            <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Agency Name</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Department</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Address</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Procurements</th>
+            <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Created</th>
+            <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for agency in agencies %}
+          <tr>
+            <td class="px-4 py-3" style="font-weight:600;color:var(--navy);">
+              {{ agency.name }}
+            </td>
+            <td class="py-3" style="color:var(--gray-600);">
+              {{ agency.department|default:"—" }}
+            </td>
+            <td class="py-3" style="color:var(--gray-500);font-size:.8rem;max-width:200px;">
+              {{ agency.address|default:"—"|truncatechars:50 }}
+            </td>
+            <td class="py-3">
+              <span style="font-size:.8rem;font-weight:600;color:var(--navy);">
+                {{ agency.procurements.count }}
+              </span>
+            </td>
+            <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">
+              {{ agency.created_at|date:"M d, Y" }}
+            </td>
+            <td class="py-3 pe-4 text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                <button type="button"
+                        class="btn btn-sm"
+                        style="border:1px solid var(--navy-muted);color:var(--navy);font-size:.75rem;padding:3px 10px;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editAgencyModal{{ agency.pk }}">
+                  <i class="bi bi-pencil me-1"></i>Edit
+                </button>
+                <button type="button"
+                        class="btn btn-sm"
+                        style="border:1px solid var(--red);color:var(--red);font-size:.75rem;padding:3px 10px;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteAgencyModal{{ agency.pk }}">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5" style="color:var(--gray-400);">
+      <i class="bi bi-building" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+      No agencies yet.
+      <button type="button"
+              class="btn btn-sm btn-gold ms-2"
+              data-bs-toggle="modal"
+              data-bs-target="#createAgencyModal">
+        Create your first one
+      </button>
+    </div>
+    {% endif %}
+
+  </div><!-- /widget-card -->
+
+  <!-- ── Edit modals — outside table ───────────────────────────────────── -->
+  {% for agency in agencies %}
+  <div class="modal fade" id="editAgencyModal{{ agency.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:none;border-radius:12px;">
+        <form method="post" action="/admin-panel/agencies/{{ agency.pk }}/edit/">
+          {% csrf_token %}
+          <div class="modal-body p-4">
+            <h5 style="color:var(--navy);font-weight:700;margin-bottom:1.25rem;">
+              <i class="bi bi-pencil me-2" style="color:var(--gold);"></i>Edit Agency
+            </h5>
+            <div class="mb-3">
+              <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+                Agency Name <span style="color:var(--red);">*</span>
+              </label>
+              <input type="text" name="name" class="form-control"
+                     style="font-size:.875rem;border-radius:8px;"
+                     value="{{ agency.name }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+                Department
+              </label>
+              <input type="text" name="department" class="form-control"
+                     style="font-size:.875rem;border-radius:8px;"
+                     value="{{ agency.department }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+                Address
+              </label>
+              <textarea name="address" rows="3" class="form-control"
+                        style="font-size:.875rem;border-radius:8px;">{{ agency.address }}</textarea>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-3">
+              <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                      style="border:1px solid var(--gray-200);color:var(--gray-600);">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-sm btn-gold">
+                <i class="bi bi-check-lg me-1"></i>Save Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete modal -->
+  <div class="modal fade" id="deleteAgencyModal{{ agency.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:none;border-radius:12px;">
+        <form method="post" action="/admin-panel/agencies/{{ agency.pk }}/delete/">
+          {% csrf_token %}
+          <div class="modal-body p-4 text-center">
+            <div style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+              <i class="bi bi-exclamation-triangle-fill" style="color:var(--red);font-size:1.4rem;"></i>
+            </div>
+            <h5 style="color:var(--navy);font-weight:700;">Delete Agency?</h5>
+            <p style="color:var(--gray-500);font-size:.875rem;">
+              <strong>{{ agency.name }}</strong><br>
+              {% if agency.procurements.count > 0 %}
+                <span style="color:var(--red);font-size:.8rem;">
+                  This agency has {{ agency.procurements.count }} procurement(s) and cannot be deleted.
+                </span>
+              {% else %}
+                <span style="color:var(--red);font-size:.8rem;">This action cannot be undone.</span>
+              {% endif %}
+            </p>
+            <div class="d-flex gap-2 justify-content-center mt-3">
+              <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                      style="border:1px solid var(--gray-200);color:var(--gray-600);">
+                Cancel
+              </button>
+              {% if agency.procurements.count == 0 %}
+              <button type="submit" class="btn btn-sm"
+                      style="background:var(--red);color:#fff;border:none;">
+                <i class="bi bi-trash me-1"></i>Yes, delete
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div><!-- /container -->
+
+<!-- ── Create Agency Modal ─────────────────────────────────────────────── -->
+<div class="modal fade" id="createAgencyModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border:none;border-radius:12px;">
+      <form method="post" action="/admin-panel/agencies/create/">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <h5 style="color:var(--navy);font-weight:700;margin-bottom:1.25rem;">
+            <i class="bi bi-building me-2" style="color:var(--gold);"></i>New Agency
+          </h5>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+              Agency Name <span style="color:var(--red);">*</span>
+            </label>
+            <input type="text" name="name" class="form-control"
+                   style="font-size:.875rem;border-radius:8px;" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+              Department
+            </label>
+            <input type="text" name="department" class="form-control"
+                   style="font-size:.875rem;border-radius:8px;">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-size:.75rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;">
+              Address
+            </label>
+            <textarea name="address" rows="3" class="form-control"
+                      style="font-size:.875rem;border-radius:8px;"></textarea>
+          </div>
+          <div class="d-flex gap-2 justify-content-end mt-3">
+            <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                    style="border:1px solid var(--gray-200);color:var(--gray-600);">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-sm btn-gold">
+              <i class="bi bi-plus-lg me-1"></i>Create Agency
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

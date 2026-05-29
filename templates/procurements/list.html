@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load procurement_tags %}
+{% block title %}Procurements — ProcureGov{% endblock %}
+
+{% block content %}
+<div class="pg-hero" style="padding: 40px 0 0;">
+  <div class="container">
+    <div class="row align-items-end">
+      <div class="col-md-8">
+        <div class="hero-tag mb-2" style="display:inline-block;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:4px 10px;border-radius:99px;">
+          Open Government Procurement
+        </div>
+        <h1 style="color:#fff;font-weight:700;font-size:28px;">Transparent. Fair. <span style="color:var(--gold);">Accountable.</span></h1>
+        <p style="color:rgba(255,255,255,.5);font-size:13px;max-width:480px;">
+          Browse active procurement postings from verified government agencies. All bid amounts are sealed until the official opening date.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar mt-4" style="background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.08);">
+    <div class="container">
+      <div class="row text-center py-3">
+        <div class="col-4">
+          <div style="color:#fff;font-size:22px;font-weight:700;">{{ total_open }}</div>
+          <div style="color:rgba(255,255,255,.4);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Open Bids</div>
+        </div>
+        <div class="col-4">
+          <div style="color:#fff;font-size:22px;font-weight:700;">{{ total_agencies }}</div>
+          <div style="color:rgba(255,255,255,.4);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Agencies</div>
+        </div>
+        <div class="col-4">
+          <div style="color:#fff;font-size:22px;font-weight:700;">100%</div>
+          <div style="color:rgba(255,255,255,.4);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Transparent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <form method="get" class="mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <div class="input-group" style="border-radius:var(--radius);overflow:hidden;">
+          <span class="input-group-text" style="background:#fff;border-color:var(--gray-200);border-right:none;">
+            <i class="bi bi-search" style="color:var(--gray-400);font-size:13px;"></i>
+          </span>
+          <input type="text" name="search" value="{{ search }}" class="form-control"
+                 placeholder="Search procurements..."
+                 style="border-left:none;border-color:var(--gray-200);font-size:13px;">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="category" class="form-select" style="font-size:13px;border-color:var(--gray-200);">
+          <option value="">All categories</option>
+          {% for value, label in categories %}
+            <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="status" class="form-select" style="font-size:13px;border-color:var(--gray-200);">
+          <option value="">All statuses</option>
+          <option value="OPEN" {% if selected_status == 'OPEN' %}selected{% endif %}>Open</option>
+          <option value="AWARDED" {% if selected_status == 'AWARDED' %}selected{% endif %}>Awarded</option>
+          <option value="CLOSED" {% if selected_status == 'CLOSED' %}selected{% endif %}>Closed</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-gold w-100" style="font-size:13px;">Filter</button>
+      </div>
+    </div>
+  </form>
+
+  {% if procurements %}
+    <div class="row g-3">
+      {% for proc in procurements %}
+      <div class="col-12">
+        <a href="{% url 'procurements:detail' proc.pk %}" style="text-decoration:none;">
+          <div class="proc-card status-{{ proc.status|lower }}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:.5px;text-transform:uppercase;">
+                {{ proc.reference_number }}
+              </span>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-{{ proc.status|lower }}" style="font-size:10px;font-weight:600;padding:4px 10px;border-radius:99px;">
+                  {{ proc.get_status_display }}
+                </span>
+                <span style="font-size:10px;color:var(--gray-400);background:var(--gray-100);padding:3px 8px;border-radius:99px;">
+                  {{ proc.get_category_display }}
+                </span>
+              </div>
+            </div>
+
+            <h6 style="font-size:14px;font-weight:600;color:var(--gray-800);margin-bottom:4px;line-height:1.4;">
+              {{ proc.title }}
+            </h6>
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:10px;">
+              {{ proc.agency.name }}{% if proc.agency.department %} — {{ proc.agency.department }}{% endif %}
+            </p>
+
+            <div class="d-flex justify-content-between align-items-center pt-2"
+                 style="border-top:1px solid var(--gray-100);">
+              <span style="font-size:12px;color:var(--gray-400);">
+                {{ proc.bids.count }} bid{{ proc.bids.count|pluralize }} &nbsp;·&nbsp; Posted {{ proc.created_at|date:"M d, Y" }}
+              </span>
+              <div class="d-flex align-items-center gap-3">
+                <span style="font-size:14px;font-weight:700;color:var(--navy);">
+                  {{ proc.approved_budget|format_currency }}
+                </span>
+                {% if proc.is_open %}
+                  <span class="countdown-pill">
+                    ⏱ {% bid_countdown proc.bid_open_date %}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+      {% if procurements.has_previous %}
+        <a href="?page={{ procurements.previous_page_number }}&search={{ search }}&category={{ selected_category }}&status={{ selected_status }}"
+           class="btn btn-sm me-2" style="font-size:12px;border-color:var(--gray-200);">← Previous</a>
+      {% endif %}
+      <span style="font-size:12px;color:var(--gray-400);padding:6px 12px;">
+        Page {{ procurements.number }} of {{ procurements.paginator.num_pages }}
+      </span>
+      {% if procurements.has_next %}
+        <a href="?page={{ procurements.next_page_number }}&search={{ search }}&category={{ selected_category }}&status={{ selected_status }}"
+           class="btn btn-sm ms-2" style="font-size:12px;border-color:var(--gray-200);">Next →</a>
+      {% endif %}
+    </div>
+
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-inbox" style="font-size:40px;color:var(--gray-200);"></i>
+      <p style="color:var(--gray-400);font-size:13px;margin-top:12px;">No procurements found matching your filters.</p>
+      <a href="{% url 'procurements:list' %}" style="font-size:12px;color:var(--navy);font-weight:600;">Clear filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load procurement_tags %}
+
+{% block title %}Award Contract — ProcureGov{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:520px;">
+  <div class="widget-card p-4 text-center">
+    <div style="width:64px;height:64px;background:var(--gold-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+      <i class="bi bi-trophy-fill" style="color:var(--gold);font-size:1.6rem;"></i>
+    </div>
+    <h4 style="color:var(--navy);font-weight:700;">Award Contract?</h4>
+    <p style="color:var(--gray-500);font-size:.875rem;margin:.75rem 0;">
+      You are about to award the contract for<br>
+      <strong style="color:var(--navy);">{{ procurement.reference_number }}</strong><br>
+      to <strong style="color:var(--navy);">
+        {{ bid.submitted_by.organization|default:bid.submitted_by.username }}
+      </strong><br>
+      for <strong>{{ bid.bid_amount|format_currency }}</strong>.
+    </p>
+    <p style="color:var(--red);font-size:.8rem;">This action cannot be undone.</p>
+    <div class="d-flex gap-2 justify-content-center mt-3">
+      <a href="{% url 'bids:all_bids' %}?procurement={{ procurement.pk }}"
+         class="btn btn-sm"
+         style="border:1px solid var(--gray-200);color:var(--gray-600);">
+        Cancel
+      </a>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-gold">
+          <i class="bi bi-trophy me-1"></i>Yes, award contract
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

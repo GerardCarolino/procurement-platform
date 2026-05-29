@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load procurement_tags %}
+{% block title %}Submit Bid — {{ procurement.reference_number }}{% endblock %}
+
+{% block content %}
+<div style="background:var(--navy);padding:32px 0;">
+  <div class="container">
+    <a href="{% url 'procurements:detail' procurement.pk %}"
+       style="color:rgba(255,255,255,.5);font-size:12px;text-decoration:none;">
+      ← Back to procurement
+    </a>
+    <h1 style="color:#fff;font-size:20px;font-weight:700;margin-top:12px;">Submit Your Bid</h1>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;margin:4px 0 0;">
+      {{ procurement.reference_number }} — {{ procurement.title }}
+    </p>
+  </div>
+</div>
+
+<div class="container py-4" style="max-width:680px;">
+
+  <div class="mb-4 p-3" style="background:var(--gold-pale);border-radius:var(--radius);border-left:3px solid var(--gold);">
+    <p style="font-size:12px;color:var(--amber);margin:0;font-weight:500;">
+      <i class="bi bi-lock-fill me-1"></i>
+      Your bid amount is sealed and invisible to all parties until the opening date:
+      <strong>{{ procurement.bid_open_date|date:"M d, Y g:i A" }}</strong>
+    </p>
+  </div>
+
+  <div class="widget-card">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="procurement" value="{{ procurement.pk }}">
+
+      <!-- Honeypot: hidden from real users, visible to bots -->
+      <div style="display:none;" aria-hidden="true">
+        <label for="id_website">Leave this field empty</label>
+        {{ form.website }}
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray-600);">
+          Bid amount (₱)
+        </label>
+        <div class="input-group">
+          <span class="input-group-text" style="background:#fff;border-color:var(--gray-200);font-size:13px;color:var(--gray-400);">₱</span>
+          <input type="number" name="bid_amount" step="0.01" min="0"
+                 class="form-control {% if form.bid_amount.errors %}is-invalid{% endif %}"
+                 style="border-color:var(--gray-200);font-size:13px;font-weight:600;"
+                 placeholder="0.00"
+                 value="{{ form.bid_amount.value|default:'' }}">
+          {% if form.bid_amount.errors %}
+            <div class="invalid-feedback">{{ form.bid_amount.errors.0 }}</div>
+          {% endif %}
+        </div>
+        <p style="font-size:11px;color:var(--gray-400);margin-top:6px;">
+          Approved budget: <strong>{{ procurement.approved_budget|format_currency }}</strong>
+        </p>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray-600);">
+          Technical proposal
+        </label>
+        <textarea name="technical_proposal" rows="6"
+                  class="form-control {% if form.technical_proposal.errors %}is-invalid{% endif %}"
+                  style="border-color:var(--gray-200);font-size:13px;resize:vertical;"
+                  placeholder="Describe your technical approach, qualifications, timeline, and why your organization is best suited for this procurement...">{{ form.technical_proposal.value|default:'' }}</textarea>
+        {% if form.technical_proposal.errors %}
+          <div class="invalid-feedback">{{ form.technical_proposal.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray-600);">
+          Supporting document <span style="color:var(--gray-400);font-weight:400;">(optional — PDF, DOCX)</span>
+        </label>
+        <input type="file" name="supporting_document" accept=".pdf,.doc,.docx"
+               class="form-control" style="border-color:var(--gray-200);font-size:13px;">
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger" style="font-size:12px;border-radius:var(--radius);">
+          {{ form.non_field_errors.0 }}
+        </div>
+      {% endif %}
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-gold" style="padding:10px 24px;font-size:13px;">
+          Submit Sealed Bid
+        </button>
+        <a href="{% url 'procurements:detail' procurement.pk %}"
+           class="btn" style="padding:10px 24px;font-size:13px;border-color:var(--gray-200);color:var(--gray-600);">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
