@@ -49,7 +49,7 @@
 
     {% if view == 'all' %}
     <!-- Agency admin table view -->
-    <div class="widget-card p-0 overflow-hidden">
+    <div class="widget-card p-0 overflow-visible">
       <div class="table-responsive">
         <table class="table table-hover mb-0" style="font-size:.875rem;">
           <thead style="background:var(--gray-50);">
@@ -96,44 +96,6 @@
                           data-bs-target="#awardModal{{ bid.pk }}">
                     <i class="bi bi-trophy me-1"></i>Award
                   </button>
-
-                  <!-- Award confirmation modal -->
-                  <div class="modal fade" id="awardModal{{ bid.pk }}" tabindex="-1">
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content" style="border:none;border-radius:12px;">
-                        <div class="modal-body p-4 text-center">
-                          <div style="width:56px;height:56px;background:var(--gold-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                            <i class="bi bi-trophy-fill" style="color:var(--gold);font-size:1.4rem;"></i>
-                          </div>
-                          <h5 style="color:var(--navy);font-weight:700;">Award Contract?</h5>
-                          <p style="color:var(--gray-500);font-size:.875rem;">
-                            Award this contract to<br>
-                            <strong style="color:var(--navy);">
-                              {{ bid.submitted_by.organization|default:bid.submitted_by.username }}
-                            </strong><br>
-                            for <strong>{{ bid.bid_amount|format_currency }}</strong>?<br>
-                            <span style="color:var(--red);font-size:.8rem;margin-top:4px;display:block;">
-                              This action cannot be undone.
-                            </span>
-                          </p>
-                          <div class="d-flex gap-2 justify-content-center mt-3">
-                            <button class="btn btn-sm" data-bs-dismiss="modal"
-                                    style="border:1px solid var(--gray-200);color:var(--gray-600);">
-                              Cancel
-                            </button>
-                            <form method="post" action="{% url 'bids:award' bid.pk %}">
-                              {% csrf_token %}
-                              <button type="submit" class="btn btn-sm btn-gold">
-                                <i class="bi bi-trophy me-1"></i>Yes, award contract
-                              </button>
-                            </form>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- /modal -->
-
                 {% elif existing_award and existing_award.winning_bid == bid %}
                   <span style="color:var(--green);font-size:.8rem;font-weight:600;">
                     <i class="bi bi-check-circle-fill me-1"></i>Winner
@@ -223,5 +185,51 @@
       </a>
     </div>
   {% endif %}
+
 </div>
+
+<!-- ── Award modals — outside container so overflow never clips them ────── -->
+{% if view == 'all' %}
+  {% for bid in bids %}
+    {% if not existing_award and bid.is_amount_visible %}
+    <div class="modal fade" id="awardModal{{ bid.pk }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border:none;border-radius:12px;">
+          <form method="post" action="{% url 'bids:award' bid.pk %}">
+            {% csrf_token %}
+            <div class="modal-body p-4 text-center">
+              <div style="width:56px;height:56px;background:var(--gold-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                <i class="bi bi-trophy-fill" style="color:var(--gold);font-size:1.4rem;"></i>
+              </div>
+              <h5 style="color:var(--navy);font-weight:700;">Award Contract?</h5>
+              <p style="color:var(--gray-500);font-size:.875rem;">
+                Award this contract to<br>
+                <strong style="color:var(--navy);">
+                  {{ bid.submitted_by.organization|default:bid.submitted_by.username }}
+                </strong><br>
+                for <strong>{{ bid.bid_amount|format_currency }}</strong>?<br>
+                <span style="color:var(--red);font-size:.8rem;margin-top:4px;display:block;">
+                  This action cannot be undone.
+                </span>
+              </p>
+              <div class="d-flex gap-2 justify-content-center mt-3">
+                <button type="button"
+                        class="btn btn-sm"
+                        data-bs-dismiss="modal"
+                        style="border:1px solid var(--gray-200);color:var(--gray-600);">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-sm btn-gold">
+                  <i class="bi bi-trophy me-1"></i>Yes, award contract
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
 {% endblock %}
