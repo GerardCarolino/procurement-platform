@@ -6,7 +6,7 @@ DEBUG = False
 
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'procuregov.onrender.com').split(',')
 
 # ── HTTPS / SSL ───────────────────────────────────────────────────────────────
 SECURE_SSL_REDIRECT             = True
