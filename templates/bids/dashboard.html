@@ -10,21 +10,21 @@
         <h1 style="color:#fff;font-size:20px;font-weight:700;">
           {% if view == 'mine' %}My Bid Dashboard
           {% else %}
-            Bids{% if procurement %} — {{ procurement.reference_number }}{% endif %}
+          Bids{% if procurement %} — {{ procurement.reference_number }}{% endif %}
           {% endif %}
         </h1>
         <p style="color:rgba(255,255,255,.5);font-size:13px;margin:4px 0 0;">
           {% if view == 'mine' %}Track your submitted bids and their status.
           {% else %}
-            {% if procurement %}{{ procurement.title }}{% else %}All submitted bids.{% endif %}
+          {% if procurement %}{{ procurement.title }}{% else %}All submitted bids.{% endif %}
           {% endif %}
         </p>
       </div>
       {% if view == 'all' %}
-        <a href="{% url 'procurements:admin_dashboard' %}"
-           style="color:rgba(255,255,255,.5);font-size:.875rem;text-decoration:none;">
-          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-        </a>
+      <a href="{% url 'procurements:admin_dashboard' %}"
+        style="color:rgba(255,255,255,.5);font-size:.875rem;text-decoration:none;">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+      </a>
       {% endif %}
     </div>
   </div>
@@ -34,12 +34,13 @@
 
   {% if existing_award %}
   <div class="alert d-flex align-items-center gap-3 mb-4"
-       style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:14px 18px;">
+    style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:14px 18px;">
     <i class="bi bi-trophy-fill" style="color:var(--amber);font-size:1.2rem;"></i>
     <div>
       <strong style="color:var(--navy);">Contract already awarded</strong>
       <span style="color:var(--gray-600);font-size:.875rem;margin-left:8px;">
-        Awarded to {{ existing_award.winning_bid.submitted_by.organization|default:existing_award.winning_bid.submitted_by.username }}
+        Awarded to {{
+        existing_award.winning_bid.submitted_by.organization|default:existing_award.winning_bid.submitted_by.username }}
       </span>
     </div>
   </div>
@@ -47,189 +48,250 @@
 
   {% if bids %}
 
-    {% if view == 'all' %}
-    <!-- Agency admin table view -->
-    <div class="widget-card p-0 overflow-visible">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0" style="font-size:.875rem;">
-          <thead style="background:var(--gray-50);">
-            <tr>
-              <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Vendor</th>
-              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Organization</th>
-              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Bid Amount</th>
-              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Submitted</th>
-              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Status</th>
-              <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for bid in bids %}
-            <tr>
-              <td class="px-4 py-3">
-                <div style="font-weight:600;color:var(--navy);">{{ bid.submitted_by.username }}</div>
-                <div style="font-size:.75rem;color:var(--gray-400);">{{ bid.submitted_by.email }}</div>
-              </td>
-              <td class="py-3" style="color:var(--gray-600);">
-                {{ bid.submitted_by.organization|default:"—" }}
-              </td>
-              <td class="py-3" style="font-weight:600;">
-                {% if bid.is_amount_visible %}
-                  <span style="color:var(--navy);">{{ bid.bid_amount|format_currency }}</span>
-                {% else %}
-                  <span style="color:var(--gray-400);font-size:.8rem;">
-                    <i class="bi bi-lock-fill me-1"></i>Sealed
-                  </span>
-                {% endif %}
-              </td>
-              <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">
-                {{ bid.submitted_at|date:"M d, Y H:i" }}
-              </td>
-              <td class="py-3">
-                <span class="badge-{{ bid.status|lower }}">{{ bid.get_status_display }}</span>
-              </td>
-              <td class="py-3 pe-4 text-end">
-                {% if not existing_award and bid.is_amount_visible %}
-                  <button type="button"
-                          class="btn btn-sm btn-gold"
-                          style="font-size:.75rem;padding:4px 12px;"
-                          data-bs-toggle="modal"
-                          data-bs-target="#awardModal{{ bid.pk }}">
-                    <i class="bi bi-trophy me-1"></i>Award
-                  </button>
-                {% elif existing_award and existing_award.winning_bid == bid %}
-                  <span style="color:var(--green);font-size:.8rem;font-weight:600;">
-                    <i class="bi bi-check-circle-fill me-1"></i>Winner
-                  </span>
-                {% else %}
-                  <span style="color:var(--gray-300);font-size:.8rem;">—</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+  {% if view == 'all' %}
+  <!-- Agency admin table view -->
+  <div class="widget-card p-0 overflow-visible">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:.875rem;">
+        <thead style="background:var(--gray-50);">
+          <tr>
+            <th class="px-4 py-3"
+              style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">
+              Vendor</th>
+            <th class="py-3"
+              style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">
+              Organization</th>
+            <th class="py-3"
+              style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">
+              Bid Amount</th>
+            <th class="py-3"
+              style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">
+              Submitted</th>
+            <th class="py-3"
+              style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">
+              Status</th>
+            <th class="py-3 pe-4 text-end"
+              style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">
+              Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bid in bids %}
+          <tr>
+            <td class="px-4 py-3">
+              <div style="font-weight:600;color:var(--navy);">{{ bid.submitted_by.username }}</div>
+              <div style="font-size:.75rem;color:var(--gray-400);">{{ bid.submitted_by.email }}</div>
+            </td>
+            <td class="py-3" style="color:var(--gray-600);">
+              {{ bid.submitted_by.organization|default:"—" }}
+            </td>
+            <td class="py-3" style="font-weight:600;">
+              {% if bid.is_amount_visible %}
+              <span style="color:var(--navy);">{{ bid.bid_amount|format_currency }}</span>
+              {% else %}
+              <span style="color:var(--gray-400);font-size:.8rem;">
+                <i class="bi bi-lock-fill me-1"></i>Sealed
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">
+              {{ bid.submitted_at|date:"M d, Y H:i" }}
+            </td>
+            <td class="py-3">
+              <span class="badge-{{ bid.status|lower }}">{{ bid.get_status_display }}</span>
+            </td>
+            <td class="py-3 pe-4 text-end">
+              {% if not existing_award and bid.is_amount_visible %}
+              <button type="button" class="btn btn-sm btn-gold" style="font-size:.75rem;padding:4px 12px;"
+                data-bs-toggle="modal" data-bs-target="#awardModal{{ bid.pk }}">
+                <i class="bi bi-trophy me-1"></i>Award
+              </button>
+              {% elif existing_award and existing_award.winning_bid == bid %}
+              <span style="color:var(--green);font-size:.8rem;font-weight:600;">
+                <i class="bi bi-check-circle-fill me-1"></i>Winner
+              </span>
+              {% else %}
+              <span style="color:var(--gray-300);font-size:.8rem;">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+  </div>
 
-    {% else %}
-    <!-- Vendor card view -->
-    <div class="row g-3">
-      {% for bid in bids %}
-      <div class="col-12">
-        <div class="widget-card">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-              <div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;">
-                {{ bid.procurement.reference_number }}
-              </div>
-              <div style="font-size:14px;font-weight:600;color:var(--gray-800);">
-                {{ bid.procurement.title }}
-              </div>
-              <div style="font-size:12px;color:var(--gray-400);margin-top:2px;">
-                {{ bid.procurement.agency.name }}
-              </div>
+  {% else %}
+  <!-- Vendor card view -->
+  <div class="row g-3">
+    {% for bid in bids %}
+    <div class="col-12">
+      <div class="widget-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div
+              style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;">
+              {{ bid.procurement.reference_number }}
             </div>
-            <span class="badge badge-{{ bid.status|lower }}"
-              style="font-size:10px;padding:4px 10px;border-radius:99px;font-weight:600;white-space:nowrap;">
-              {{ bid.get_status_display }}
-            </span>
+            <div style="font-size:14px;font-weight:600;color:var(--gray-800);">
+              {{ bid.procurement.title }}
+            </div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:2px;">
+              {{ bid.procurement.agency.name }}
+            </div>
           </div>
+          <span class="badge badge-{{ bid.status|lower }}"
+            style="font-size:10px;padding:4px 10px;border-radius:99px;font-weight:600;white-space:nowrap;">
+            {{ bid.get_status_display }}
+          </span>
+        </div>
 
-          <div class="row g-2 mt-1" style="border-top:1px solid var(--gray-100);padding-top:12px;">
-            <div class="col-sm-3">
-              <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;">Your bid</div>
-              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-top:2px;">
-                {% if bid.is_amount_visible %}
-                  {{ bid.bid_amount|format_currency }}
-                {% else %}
-                  <span style="color:var(--gray-400);font-size:12px;">
-                    <i class="bi bi-lock-fill"></i> Sealed
-                  </span>
-                {% endif %}
-              </div>
+        <div class="row g-2 mt-1" style="border-top:1px solid var(--gray-100);padding-top:12px;">
+          <div class="col-sm-3">
+            <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;">Your bid
             </div>
-            <div class="col-sm-3">
-              <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;">Opens</div>
-              <div style="font-size:12px;color:var(--gray-800);margin-top:2px;">
-                {{ bid.procurement.bid_open_date|date:"M d, Y" }}
-              </div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-top:2px;">
+              {% if bid.is_amount_visible %}
+              {{ bid.bid_amount|format_currency }}
+              {% else %}
+              <span style="color:var(--gray-400);font-size:12px;">
+                <i class="bi bi-lock-fill"></i> Sealed
+              </span>
+              {% endif %}
             </div>
-            <div class="col-sm-3">
-              <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;">Submitted</div>
-              <div style="font-size:12px;color:var(--gray-800);margin-top:2px;">
-                {{ bid.submitted_at|date:"M d, Y" }}
-              </div>
+          </div>
+          <div class="col-sm-3">
+            <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;">Opens</div>
+            <div style="font-size:12px;color:var(--gray-800);margin-top:2px;">
+              {{ bid.procurement.bid_open_date|date:"M d, Y" }}
             </div>
-            <div class="col-sm-3 text-sm-end">
-              <a href="{% url 'procurements:detail' bid.procurement.pk %}"
-                 style="font-size:12px;color:var(--navy);font-weight:600;text-decoration:none;">
-                View procurement →
-              </a>
+          </div>
+          <div class="col-sm-3">
+            <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;">Submitted
             </div>
+            <div style="font-size:12px;color:var(--gray-800);margin-top:2px;">
+              {{ bid.submitted_at|date:"M d, Y" }}
+            </div>
+          </div>
+          <div class="col-sm-3 text-sm-end d-flex flex-column align-items-sm-end gap-1">
+            <a href="{% url 'procurements:detail' bid.procurement.pk %}"
+              style="font-size:12px;color:var(--navy);font-weight:600;text-decoration:none;">
+              View procurement →
+            </a>
+            {% if not bid.is_amount_visible and bid.status == 'SUBMITTED' %}
+            <a href="{% url 'bids:edit' bid.pk %}"
+              style="font-size:12px;color:var(--gray-600);font-weight:600;text-decoration:none;">
+              <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+            <button type="button" class="btn btn-sm p-0 border-0 bg-transparent"
+              style="font-size:12px;color:var(--red);font-weight:600;" data-bs-toggle="modal"
+              data-bs-target="#cancelModal{{ bid.pk }}">
+              <i class="bi bi-x-circle me-1"></i>Withdraw
+            </button>
+            {% endif %}
           </div>
         </div>
       </div>
-      {% endfor %}
     </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
 
   {% else %}
-    <div class="text-center py-5">
-      <i class="bi bi-inbox" style="font-size:40px;color:var(--gray-200);"></i>
-      <p style="color:var(--gray-400);font-size:13px;margin-top:12px;">
-        {% if view == 'mine' %}You haven't submitted any bids yet.
-        {% else %}No bids found for this procurement.{% endif %}
-      </p>
-      <a href="{% url 'procurements:list' %}" style="font-size:12px;color:var(--navy);font-weight:600;">
-        Browse procurements
-      </a>
-    </div>
+  <div class="text-center py-5">
+    <i class="bi bi-inbox" style="font-size:40px;color:var(--gray-200);"></i>
+    <p style="color:var(--gray-400);font-size:13px;margin-top:12px;">
+      {% if view == 'mine' %}You haven't submitted any bids yet.
+      {% else %}No bids found for this procurement.{% endif %}
+    </p>
+    <a href="{% url 'procurements:list' %}" style="font-size:12px;color:var(--navy);font-weight:600;">
+      Browse procurements
+    </a>
+  </div>
   {% endif %}
 
 </div>
 
 <!-- ── Award modals — outside container so overflow never clips them ────── -->
 {% if view == 'all' %}
-  {% for bid in bids %}
-    {% if not existing_award and bid.is_amount_visible %}
-    <div class="modal fade" id="awardModal{{ bid.pk }}" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border:none;border-radius:12px;">
-          <form method="post" action="{% url 'bids:award' bid.pk %}">
-            {% csrf_token %}
-            <div class="modal-body p-4 text-center">
-              <div style="width:56px;height:56px;background:var(--gold-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                <i class="bi bi-trophy-fill" style="color:var(--gold);font-size:1.4rem;"></i>
-              </div>
-              <h5 style="color:var(--navy);font-weight:700;">Award Contract?</h5>
-              <p style="color:var(--gray-500);font-size:.875rem;">
-                Award this contract to<br>
-                <strong style="color:var(--navy);">
-                  {{ bid.submitted_by.organization|default:bid.submitted_by.username }}
-                </strong><br>
-                for <strong>{{ bid.bid_amount|format_currency }}</strong>?<br>
-                <span style="color:var(--red);font-size:.8rem;margin-top:4px;display:block;">
-                  This action cannot be undone.
-                </span>
-              </p>
-              <div class="d-flex gap-2 justify-content-center mt-3">
-                <button type="button"
-                        class="btn btn-sm"
-                        data-bs-dismiss="modal"
-                        style="border:1px solid var(--gray-200);color:var(--gray-600);">
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-sm btn-gold">
-                  <i class="bi bi-trophy me-1"></i>Yes, award contract
-                </button>
-              </div>
-            </div>
-          </form>
+{% for bid in bids %}
+{% if not existing_award and bid.is_amount_visible %}
+<div class="modal fade" id="awardModal{{ bid.pk }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border:none;border-radius:12px;">
+      <form method="post" action="{% url 'bids:award' bid.pk %}">
+        {% csrf_token %}
+        <div class="modal-body p-4 text-center">
+          <div
+            style="width:56px;height:56px;background:var(--gold-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <i class="bi bi-trophy-fill" style="color:var(--gold);font-size:1.4rem;"></i>
+          </div>
+          <h5 style="color:var(--navy);font-weight:700;">Award Contract?</h5>
+          <p style="color:var(--gray-500);font-size:.875rem;">
+            Award this contract to<br>
+            <strong style="color:var(--navy);">
+              {{ bid.submitted_by.organization|default:bid.submitted_by.username }}
+            </strong><br>
+            for <strong>{{ bid.bid_amount|format_currency }}</strong>?<br>
+            <span style="color:var(--red);font-size:.8rem;margin-top:4px;display:block;">
+              This action cannot be undone.
+            </span>
+          </p>
+          <div class="d-flex gap-2 justify-content-center mt-3">
+            <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+              style="border:1px solid var(--gray-200);color:var(--gray-600);">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-sm btn-gold">
+              <i class="bi bi-trophy me-1"></i>Yes, award contract
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
-    {% endif %}
-  {% endfor %}
+  </div>
+</div>
 {% endif %}
-
+{% endfor %}
+{% endif %}
+<!-- ── Cancel modals — vendor only ──────────────────────────────────────── -->
+{% if view == 'mine' %}
+{% for bid in bids %}
+{% if not bid.is_amount_visible and bid.status == 'SUBMITTED' %}
+<div class="modal fade" id="cancelModal{{ bid.pk }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border:none;border-radius:12px;">
+      <form method="post" action="{% url 'bids:cancel' bid.pk %}">
+        {% csrf_token %}
+        <div class="modal-body p-4 text-center">
+          <div
+            style="width:56px;height:56px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+            <i class="bi bi-x-circle-fill" style="color:var(--red);font-size:1.4rem;"></i>
+          </div>
+          <h5 style="color:var(--navy);font-weight:700;">Withdraw Bid?</h5>
+          <p style="color:var(--gray-500);font-size:.875rem;">
+            Are you sure you want to withdraw your bid for<br>
+            <strong style="color:var(--navy);">{{ bid.procurement.reference_number }}</strong>?<br>
+            <span style="color:var(--red);font-size:.8rem;margin-top:4px;display:block;">
+              This action cannot be undone.
+            </span>
+          </p>
+          <div class="d-flex gap-2 justify-content-center mt-3">
+            <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+              style="border:1px solid var(--gray-200);color:var(--gray-600);">
+              Keep my bid
+            </button>
+            <button type="submit" class="btn btn-sm"
+              style="background:var(--red);color:#fff;border:none;padding:6px 16px;border-radius:8px;">
+              <i class="bi bi-x-circle me-1"></i>Yes, withdraw
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
 {% endblock %}

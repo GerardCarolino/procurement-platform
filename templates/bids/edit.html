@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load procurement_tags %}
+{% block title %}Edit Bid — {{ procurement.reference_number }} — ProcureGov{% endblock %}
+
+{% block content %}
+<div style="background:var(--navy);padding:28px 0;">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'bids:my_bids' %}"
+         style="color:rgba(255,255,255,.5);font-size:.875rem;text-decoration:none;">
+        <i class="bi bi-arrow-left me-1"></i>My Bids
+      </a>
+      <span style="color:rgba(255,255,255,.2);">/</span>
+      <span style="color:rgba(255,255,255,.7);font-size:.875rem;">Edit Bid</span>
+    </div>
+    <h1 style="color:#fff;font-size:20px;font-weight:700;margin-top:12px;">
+      Edit Your Bid
+    </h1>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;margin:4px 0 0;">
+      {{ procurement.reference_number }} — {{ procurement.title }}
+    </p>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+
+      <!-- Sealed notice -->
+      <div class="alert d-flex align-items-center gap-3 mb-4"
+           style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:14px 18px;">
+        <i class="bi bi-lock-fill" style="color:var(--amber);font-size:1.1rem;"></i>
+        <div style="font-size:.875rem;">
+          <strong style="color:var(--navy);">Sealed until opening date.</strong>
+          <span style="color:var(--gray-600);margin-left:4px;">
+            You may edit your bid until
+            <strong>{{ procurement.bid_open_date|date:"M d, Y H:i" }}</strong>.
+            After that, changes are locked.
+          </span>
+        </div>
+      </div>
+
+      <div class="widget-card">
+        <form method="post" enctype="multipart/form-data" id="editBidForm">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" style="font-size:.875rem;">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <!-- Bid Amount -->
+          <div class="mb-4">
+            <label class="form-label"
+                   style="font-weight:600;font-size:.875rem;color:var(--navy);">
+              Bid Amount (PHP)
+            </label>
+            {{ form.bid_amount }}
+            {% if form.bid_amount.errors %}
+              <div style="color:var(--red);font-size:.8rem;margin-top:4px;">
+                {{ form.bid_amount.errors }}
+              </div>
+            {% endif %}
+            <div style="font-size:.78rem;color:var(--gray-400);margin-top:4px;">
+              Budget ceiling: {{ procurement.budget|format_currency }}
+            </div>
+          </div>
+
+          <!-- Technical Proposal -->
+          <div class="mb-4">
+            <label class="form-label"
+                   style="font-weight:600;font-size:.875rem;color:var(--navy);">
+              Technical Proposal
+            </label>
+            {{ form.technical_proposal }}
+            {% if form.technical_proposal.errors %}
+              <div style="color:var(--red);font-size:.8rem;margin-top:4px;">
+                {{ form.technical_proposal.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Supporting Document -->
+          <div class="mb-4">
+            <label class="form-label"
+                   style="font-weight:600;font-size:.875rem;color:var(--navy);">
+              Supporting Document
+              <span style="font-weight:400;color:var(--gray-400);">(optional)</span>
+            </label>
+            {% if bid.supporting_document %}
+              <div style="font-size:.8rem;color:var(--gray-500);margin-bottom:6px;">
+                <i class="bi bi-paperclip me-1"></i>
+                Current file:
+                <a href="{{ bid.supporting_document.url }}"
+                   target="_blank"
+                   style="color:var(--navy);font-weight:600;">
+                  {{ bid.supporting_document.name|slice:"14:" }}
+                </a>
+                — upload a new file below to replace it.
+              </div>
+            {% endif %}
+            {{ form.supporting_document }}
+            {% if form.supporting_document.errors %}
+              <div style="color:var(--red);font-size:.8rem;margin-top:4px;">
+                {{ form.supporting_document.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="d-flex gap-2 justify-content-end pt-2" style="border-top:1px solid var(--gray-100);">
+            <a href="{% url 'bids:my_bids' %}"
+               class="btn btn-sm"
+               style="border:1px solid var(--gray-200);color:var(--gray-600);padding:7px 18px;">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-sm btn-gold" id="editSubmitBtn" style="padding:7px 22px;">
+              <i class="bi bi-save me-1"></i>Save Changes
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

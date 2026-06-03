@@ -42,3 +42,15 @@ class BidSubmissionForm(forms.ModelForm):
                     'You have already submitted a bid for this procurement.'
                 )
         return cleaned_data
+
+
+# ── NEW ──────────────────────────────────────────────────────────────────────
+class BidEditForm(forms.ModelForm):
+    """Allows vendors to update bid amount, proposal, and document before opening."""
+
+    class Meta:
+        model  = Bid
+        fields = ('bid_amount', 'technical_proposal', 'supporting_document')
+        widgets = {
+            'technical_proposal': forms.Textarea(attrs={'rows': 6}),
+        }

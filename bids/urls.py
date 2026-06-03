@@ -9,4 +9,6 @@ urlpatterns = [
     path('bids/all/', views.all_bids, name='all_bids'),
     path('bids/awarded/', views.awarded_contracts, name='awarded'),
     path('bids/<int:bid_pk>/award/', views.award_bid, name='award'),
+    path('bids/<int:bid_pk>/edit/', views.edit_bid, name='edit'),       
+    path('bids/<int:bid_pk>/cancel/', views.cancel_bid, name='cancel'), 
 ]

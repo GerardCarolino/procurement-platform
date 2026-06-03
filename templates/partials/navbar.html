@@ -1,9 +1,10 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg pg-navbar">
   <div class="container">
+
+    <!-- Brand -->
     <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'procurements:list' %}">
-      <div
-        style="width:32px;height:32px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+      <div style="width:32px;height:32px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;">
         <i class="bi bi-hexagon-fill" style="color:var(--navy);font-size:16px;"></i>
       </div>
       <div>
@@ -12,65 +13,99 @@
       </div>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
-      <span class="navbar-toggler-icon"></span>
+    <!-- Mobile right side: auth buttons + burger (always visible) -->
+    <div class="d-flex align-items-center gap-2 d-lg-none ms-auto me-2">
+      {% if user.is_authenticated %}
+        {% if user.is_verified_vendor %}
+          <a href="{% url 'procurements:list' %}" class="btn btn-gold btn-sm" style="font-size:11px;padding:4px 10px;">+ Submit Bid</a>
+        {% endif %}
+        <a href="{% url 'users:logout' %}" class="btn btn-sm"
+           style="color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.25);font-size:11px;padding:4px 10px;">
+          Logout
+        </a>
+      {% else %}
+        <a href="{% url 'users:login' %}" class="btn btn-sm"
+           style="color:rgba(255,255,255,.7);font-size:11px;padding:4px 8px;">Login</a>
+        <a href="{% url 'users:register' %}" class="btn btn-gold btn-sm" style="font-size:11px;padding:4px 10px;">Register</a>
+      {% endif %}
+    </div>
+
+    <!-- Burger button — gold icon so it's visible on navy -->
+    <button class="navbar-toggler border-0 p-1" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navMain"
+            aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation"
+            style="box-shadow:none;">
+      <i class="bi bi-list" style="color:var(--gold);font-size:24px;"></i>
     </button>
 
-    <div class="collapse navbar-collapse" id="navMain">
-      <ul class="navbar-nav me-auto ms-4 gap-1">
+    <!-- Collapsible nav links -->
+    <div class="collapse navbar-collapse" id="navMain"
+     style="background:var(--navy);padding:0 4px 8px;">
+      <ul class="navbar-nav me-auto ms-lg-4 gap-1 mt-2 mt-lg-0">
         <li class="nav-item">
           <a class="nav-link {% if request.resolver_match.app_name == 'procurements' %}active{% endif %}"
-            href="{% url 'procurements:list' %}">Procurements</a>
+             href="{% url 'procurements:list' %}">Procurements</a>
         </li>
+
         {% if user.is_authenticated and user.is_vendor %}
-
         <li class="nav-item">
-          <a class="nav-link {% if 'my-bids' in request.path %}active{% endif %}" href="{% url 'bids:my_bids' %}">My
-            Bids</a>
+          <a class="nav-link {% if 'my-bids' in request.path %}active{% endif %}"
+             href="{% url 'bids:my_bids' %}">My Bids</a>
         </li>
-
         {% endif %}
 
         <li class="nav-item">
           <a class="nav-link" href="{% url 'bids:awarded' %}">Awarded Contracts</a>
         </li>
+
         {% if user.is_authenticated and user.is_agency_admin %}
         <li class="nav-item">
           <a class="nav-link {% if 'dashboard' in request.path %}active{% endif %}"
-            href="{% url 'procurements:admin_dashboard' %}">Dashboard</a>
+             href="{% url 'procurements:admin_dashboard' %}">Dashboard</a>
         </li>
         {% endif %}
+
         {% if user.is_authenticated and user.is_staff %}
         <li class="nav-item">
-          <a class="nav-link {% if 'admin-panel' in request.path %}active{% endif %}" href="/admin-panel/">Admin
-            Panel</a>
+          <a class="nav-link {% if 'admin-panel' in request.path %}active{% endif %}"
+             href="/admin-panel/">Admin Panel</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% if 'agencies' in request.path %}active{% endif %}"
-            href="/admin-panel/agencies/">Agencies</a>
+             href="/admin-panel/agencies/">Agencies</a>
         </li>
         {% endif %}
-
       </ul>
 
-      <div class="d-flex align-items-center gap-2">
+      <!-- Desktop right side auth (hidden on mobile — handled above) -->
+      <div class="d-none d-lg-flex align-items-center gap-2">
         {% if user.is_authenticated %}
-        <span style="color:rgba(255,255,255,.5);font-size:12px;">{{ user.organization|default:user.username }}</span>
-
-        {% if user.is_authenticated and user.is_verified_vendor %}
-        <a href="{% url 'procurements:list' %}" class="btn btn-gold btn-sm">+ Submit Bid</a>
-        {% endif %}
-
-        <a href="{% url 'users:logout' %}" class="btn btn-sm"
-          style="color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.2);font-size:12px;">
-          Logout
-        </a>
+          <span style="color:rgba(255,255,255,.5);font-size:12px;">
+            {{ user.organization|default:user.username }}
+          </span>
+          {% if user.is_verified_vendor %}
+            <a href="{% url 'procurements:list' %}" class="btn btn-gold btn-sm">+ Submit Bid</a>
+          {% endif %}
+          <a href="{% url 'users:logout' %}" class="btn btn-sm"
+             style="color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.2);font-size:12px;">
+            Logout
+          </a>
         {% else %}
-        <a href="{% url 'users:login' %}" class="btn btn-sm"
-          style="color:rgba(255,255,255,.7);font-size:12px;">Login</a>
-        <a href="{% url 'users:register' %}" class="btn btn-gold btn-sm">Register as Vendor</a>
+          <a href="{% url 'users:login' %}" class="btn btn-sm"
+             style="color:rgba(255,255,255,.7);font-size:12px;">Login</a>
+          <a href="{% url 'users:register' %}" class="btn btn-gold btn-sm">Register as Vendor</a>
         {% endif %}
       </div>
+
+      <!-- Mobile: username shown inside expanded menu -->
+      {% if user.is_authenticated %}
+      <div class="d-lg-none pt-2 pb-1" style="border-top:1px solid rgba(255,255,255,.1);margin-top:8px;">
+        <span style="color:rgba(255,255,255,.4);font-size:11px;padding-left:4px;">
+          Signed in as {{ user.organization|default:user.username }}
+        </span>
+      </div>
+      {% endif %}
+
     </div>
   </div>
 </nav>

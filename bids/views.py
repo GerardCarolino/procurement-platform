@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils import timezone
 from .models import Bid, Award
-from .forms import BidSubmissionForm
+from .forms import BidSubmissionForm, BidEditForm   # ← add BidEditForm here
 from procurements.models import Procurement
 from audit.logger import log_event
 
@@ -162,3 +163,80 @@ def awarded_contracts(request):
     ).order_by('-award_date')
 
     return render(request, 'bids/awarded.html', {'awards': awards})
+
+
+# ── NEW VIEWS ─────────────────────────────────────────────────────────────────
+
+@login_required
+def edit_bid(request, bid_pk):
+    bid = get_object_or_404(
+        Bid.objects.select_related('procurement', 'procurement__agency'),
+        pk=bid_pk,
+        submitted_by=request.user,   # Anti-IDOR: only the owner can edit
+    )
+
+    # Block edit after bid opening date
+    if timezone.now() >= bid.procurement.bid_open_date:
+        messages.error(request, 'Bids cannot be edited after the opening date.')
+        return redirect('bids:my_bids')
+
+    form = BidEditForm(
+        request.POST or None,
+        request.FILES or None,
+        instance=bid,
+    )
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+
+        log_event(
+            event_type='BID_EDITED',
+            user=request.user,
+            object_type='Bid',
+            object_id=bid.pk,
+            detail=f"Bid edited for {bid.procurement.reference_number}",
+            request=request,
+        )
+
+        messages.success(request, 'Your bid has been updated successfully.')
+        return redirect('bids:my_bids')
+
+    return render(request, 'bids/edit.html', {
+        'form':        form,
+        'bid':         bid,
+        'procurement': bid.procurement,
+    })
+
+
+@login_required
+def cancel_bid(request, bid_pk):
+    bid = get_object_or_404(
+        Bid.objects.select_related('procurement'),
+        pk=bid_pk,
+        submitted_by=request.user,   # Anti-IDOR: only the owner can cancel
+    )
+
+    # Block cancel after bid opening date
+    if timezone.now() >= bid.procurement.bid_open_date:
+        messages.error(request, 'Bids cannot be cancelled after the opening date.')
+        return redirect('bids:my_bids')
+
+    if request.method == 'POST':
+        procurement_ref = bid.procurement.reference_number
+
+        log_event(
+            event_type='BID_CANCELLED',
+            user=request.user,
+            object_type='Bid',
+            object_id=bid.pk,
+            detail=f"Bid cancelled for {procurement_ref}",
+            request=request,
+        )
+
+        bid.delete()
+        messages.success(request, f'Your bid for {procurement_ref} has been withdrawn.')
+        return redirect('bids:my_bids')
+
+    # GET request — this should never normally be hit directly
+    # Cancel is triggered via modal POST from dashboard, but guard it anyway
+    return redirect('bids:my_bids')
