@@ -11,7 +11,6 @@ urlpatterns = [
     path('agencies/create/', views.agency_create, name='agency_create'),
     path('agencies/<int:pk>/edit/', views.agency_edit, name='agency_edit'),
     path('agencies/<int:pk>/delete/', views.agency_delete, name='agency_delete'),
-    path('unlock/<int:attempt_pk>/', views.unlock_account, name='unlock_account'),       # NEW
-    path('unlock-all/', views.unlock_all_accounts, name='unlock_all_accounts'),          # NEW
-    path('emergency-unlock/', views.emergency_unlock, name='emergency_unlock'),
+    path('unlock/<int:attempt_pk>/', views.unlock_account, name='unlock_account'),       
+    path('unlock-all/', views.unlock_all_accounts, name='unlock_all_accounts'),          
 ]
