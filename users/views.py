@@ -7,7 +7,8 @@ from .forms import VendorRegistrationForm, LoginForm
 from .models import CustomUser
 from procurements.models import Agency
 from procurements.forms import AgencyForm
-from axes.models import AccessAttempt                          # ← NEW import
+from axes.models import AccessAttempt                       
+from django.http import HttpResponse
 
 
 def register_view(request):
@@ -237,3 +238,10 @@ def unlock_all_accounts(request):
         messages.success(request, f'All {count} locked account(s) have been unlocked.')
 
     return redirect('/admin-panel/?tab=locked')
+
+def emergency_unlock(request):
+    """Temporary emergency view — REMOVE AFTER USE."""
+    from axes.models import AccessAttempt
+    count = AccessAttempt.objects.count()
+    AccessAttempt.objects.all().delete()
+    return HttpResponse(f'Done. {count} access attempt(s) cleared.')
