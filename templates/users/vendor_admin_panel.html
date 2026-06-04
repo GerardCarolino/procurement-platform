@@ -18,25 +18,32 @@
 
   <!-- Summary widgets -->
   <div class="row g-3 mb-4">
-    <div class="col-4">
+    <div class="col-3">
       <div class="widget-card text-center">
         <i class="bi bi-hourglass-split" style="font-size:1.4rem;color:var(--amber);"></i>
         <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.pending }}</div>
         <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Pending</div>
       </div>
     </div>
-    <div class="col-4">
+    <div class="col-3">
       <div class="widget-card text-center">
         <i class="bi bi-patch-check-fill" style="font-size:1.4rem;color:var(--green);"></i>
         <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.verified }}</div>
         <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Verified</div>
       </div>
     </div>
-    <div class="col-4">
+    <div class="col-3">
       <div class="widget-card text-center">
         <i class="bi bi-x-circle-fill" style="font-size:1.4rem;color:var(--red);"></i>
         <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.rejected }}</div>
         <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Rejected</div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="widget-card text-center">
+        <i class="bi bi-lock-fill" style="font-size:1.4rem;color:var(--red);"></i>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--navy);line-height:1.1;">{{ counts.locked }}</div>
+        <div style="font-size:.75rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;">Locked</div>
       </div>
     </div>
   </div>
@@ -64,6 +71,15 @@
           <a href="?tab=rejected"
              style="display:block;padding:.75rem 1rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid {% if tab == 'rejected' %}var(--gold){% else %}transparent{% endif %};color:{% if tab == 'rejected' %}var(--navy){% else %}var(--gray-400){% endif %};">
             Rejected
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="?tab=locked"
+             style="display:block;padding:.75rem 1rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:2px solid {% if tab == 'locked' %}var(--gold){% else %}transparent{% endif %};color:{% if tab == 'locked' %}var(--navy){% else %}var(--gray-400){% endif %};">
+            Locked
+            {% if counts.locked %}
+              <span style="background:var(--red-bg);color:var(--red);font-size:.7rem;padding:1px 7px;border-radius:99px;margin-left:4px;">{{ counts.locked }}</span>
+            {% endif %}
           </a>
         </li>
       </ul>
@@ -221,6 +237,69 @@
       <div class="text-center py-5" style="color:var(--gray-400);">
         <i class="bi bi-x-circle" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
         No rejected vendors.
+      </div>
+      {% endif %}
+
+    <!-- Locked tab -->
+    {% elif tab == 'locked' %}
+      {% if locked %}
+      <!-- Unlock All button -->
+      <div class="d-flex justify-content-end px-4 pt-3">
+        <form method="post" action="/admin-panel/unlock-all/">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm"
+                  style="background:var(--navy);color:#fff;border:none;font-size:.75rem;padding:5px 14px;border-radius:8px;">
+            <i class="bi bi-unlock me-1"></i>Unlock All
+          </button>
+        </form>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.875rem;">
+          <thead style="background:var(--gray-50);">
+            <tr>
+              <th class="px-4 py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Username</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">IP Address</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Failed Attempts</th>
+              <th class="py-3" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Last Attempt</th>
+              <th class="py-3 pe-4 text-end" style="color:var(--gray-500);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attempt in locked %}
+            <tr>
+              <td class="px-4 py-3" style="font-weight:600;color:var(--navy);">
+                <i class="bi bi-lock-fill me-1" style="color:var(--red);font-size:.75rem;"></i>
+                {{ attempt.username|default:"—" }}
+              </td>
+              <td class="py-3" style="color:var(--gray-500);font-family:monospace;font-size:.8rem;">
+                {{ attempt.ip_address|default:"—" }}
+              </td>
+              <td class="py-3">
+                <span style="background:var(--red-bg);color:var(--red);font-size:.75rem;padding:2px 8px;border-radius:99px;font-weight:600;">
+                  {{ attempt.failures_since_start }} failed
+                </span>
+              </td>
+              <td class="py-3" style="color:var(--gray-500);font-size:.8rem;">
+                {{ attempt.attempt_time|date:"M d, Y H:i" }}
+              </td>
+              <td class="py-3 pe-4 text-end">
+                <form method="post" action="/admin-panel/unlock/{{ attempt.pk }}/">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm"
+                          style="background:var(--green);color:#fff;border:none;font-size:.75rem;padding:3px 10px;">
+                    <i class="bi bi-unlock me-1"></i>Unlock
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5" style="color:var(--gray-400);">
+        <i class="bi bi-unlock" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+        No locked accounts.
       </div>
       {% endif %}
     {% endif %}

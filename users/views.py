@@ -7,6 +7,7 @@ from .forms import VendorRegistrationForm, LoginForm
 from .models import CustomUser
 from procurements.models import Agency
 from procurements.forms import AgencyForm
+from axes.models import AccessAttempt                          # ← NEW import
 
 
 def register_view(request):
@@ -73,15 +74,24 @@ def vendor_admin_panel(request):
     verified = CustomUser.objects.filter(role='VENDOR', verification_status='VERIFIED')
     rejected = CustomUser.objects.filter(role='VENDOR', verification_status='REJECTED')
 
+    # Locked accounts — axes AccessAttempt entries that hit the failure limit
+    from django.conf import settings
+    failure_limit = getattr(settings, 'AXES_FAILURE_LIMIT', 10)
+    locked = AccessAttempt.objects.filter(
+        failures_since_start__gte=failure_limit
+    ).order_by('-attempt_time')
+
     context = {
         'tab':      tab,
         'pending':  pending,
         'verified': verified,
         'rejected': rejected,
+        'locked':   locked,
         'counts': {
             'pending':  pending.count(),
             'verified': verified.count(),
             'rejected': rejected.count(),
+            'locked':   locked.count(),
         },
     }
     return render(request, 'users/vendor_admin_panel.html', context)
@@ -164,7 +174,6 @@ def agency_create(request):
             agency = form.save()
             messages.success(request, f'Agency "{agency.name}" created.')
         else:
-            # Pass errors back via session so they show on redirect
             messages.error(request, 'Please fix the errors below.')
     return redirect('/admin-panel/agencies/')
 
@@ -199,3 +208,32 @@ def agency_delete(request, pk):
                 f'Remove or reassign those procurements first.'
             )
     return redirect('/admin-panel/agencies/')
+
+
+# ── Locked Accounts ───────────────────────────────────────────────────────────
+
+@login_required
+def unlock_account(request, attempt_pk):
+    """Unlock a single locked account by deleting its AccessAttempt entry."""
+    require_superuser(request.user)
+    attempt = get_object_or_404(AccessAttempt, pk=attempt_pk)
+
+    if request.method == 'POST':
+        username = attempt.username
+        attempt.delete()
+        messages.success(request, f'Account "{username}" has been unlocked.')
+
+    return redirect('/admin-panel/?tab=locked')
+
+
+@login_required
+def unlock_all_accounts(request):
+    """Unlock all locked accounts at once."""
+    require_superuser(request.user)
+
+    if request.method == 'POST':
+        count = AccessAttempt.objects.count()
+        AccessAttempt.objects.all().delete()
+        messages.success(request, f'All {count} locked account(s) have been unlocked.')
+
+    return redirect('/admin-panel/?tab=locked')

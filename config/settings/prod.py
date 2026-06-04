@@ -38,3 +38,13 @@ CLOUDINARY_STORAGE = {
     'API_KEY':    os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
+# django-axes brute force protection
+AXES_ENABLED = True
+AXES_FAILURE_LIMIT = 10                  
+AXES_COOLOFF_TIME = 1                    
+AXES_LOCKOUT_PARAMETERS = ['username']   
+AXES_NEVER_LOCKOUT_WHITELIST = True
+AXES_IP_WHITELIST = []                   
+
+
+AXES_USERNAME_WHITELIST = ['admin', 'agency_admin']
